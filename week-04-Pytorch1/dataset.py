@@ -30,7 +30,14 @@ class FoodDataset(Dataset):
         ##################### fill here ####################
         #   TODO: __getitem__을 정의해주세요
         ####################################################
-        pass
+        
+        image = Image.open(self.data[index][0]).convert('RGB')
+        label = self.data[index][1]
+        
+        if self.transforms:
+            image = self.transforms(image)
+        
+        return image, label
     
     def prepare_dataset(self):
         split_base = os.path.join(self.root, self.split)

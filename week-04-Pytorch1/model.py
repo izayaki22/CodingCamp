@@ -26,7 +26,29 @@ class vanillaCNN(nn.Module):
         #   -> cv3 -> relu -> cv4 -> relu -> cv5 -> relu -> 
         #   pool3 -> dropout -> head 순서로 거쳐야 합니다.
         ####################################################
-        pass
+        x = self.cv1(x)
+        x = self.relu(x)
+        x = self.pool1(x)
+        
+        x = self.cv2(x)
+        x = self.relu(x)
+        x = self.pool2(x)
+        
+        x = self.cv3(x)
+        x = self.relu(x)
+
+        x = self.cv4(x)
+        x = self.relu(x)
+        
+        x = self.cv5(x)
+        x = self.relu(x)
+        x = self.pool3(x)
+        
+        x = self.dropout(x)
+        x = x.view(x.size(0), -1)
+        x = self.head(x)
+        
+        return x
 
 class vanillaCNN2(nn.Module):
     def __init__(self):
@@ -47,14 +69,47 @@ class vanillaCNN2(nn.Module):
         ################### fill here #####################
         #   TODO: MLP head (self.head)를 정의해주세요
         ###################################################
+        self.head = nn.Sequential(
+            nn.Linear(in_features=9216, out_features=2048),
+            nn.ReLU(inplace=True),
+            nn.Dropout(),
+            nn.Linear(in_features=2048, out_features=2048),
+            nn.ReLU(inplace=True),
+            nn.Dropout(),
+            nn.Linear(in_features=2048, out_features=20)
+        )
+        
     
     def forward(self, x):
         ################### fill here #####################
         #   TODO: forward()를 정의해주세요
         #   vanillaCNN 과 동일하게 사용해도 무방합니다.
         ###################################################
-        pass
+        x = self.cv1(x)
+        x = self.relu(x)
+        x = self.pool1(x)
+        
+        x = self.cv2(x)
+        x = self.relu(x)
+        x = self.pool2(x)
+        
+        x = self.cv3(x)
+        x = self.relu(x)
+
+        x = self.cv4(x)
+        x = self.relu(x)
+        
+        x = self.cv5(x)
+        x = self.relu(x)
+        x = self.pool3(x)
+        
+        x = self.dropout(x)
+        x = x.view(x.size(0), -1)
+        x = self.head(x)
+        
+        return x
     
+   
 class VGG19(nn.Module):
     def __init__(self):
         super().__init__()

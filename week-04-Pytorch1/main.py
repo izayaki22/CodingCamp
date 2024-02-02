@@ -30,6 +30,7 @@ if __name__ == '__main__':
         T.Resize((227,227), interpolation=T.InterpolationMode.BILINEAR),
         T.RandomVerticalFlip(0.5),
         T.RandomHorizontalFlip(0.5),
+        T.ToTensor()
     ])
 
     train_dataset = FoodDataset("./data", "train", transforms=transforms)
@@ -61,3 +62,67 @@ if __name__ == '__main__':
     # torch.save()를 이용해 epoch마다 model이 저장되도록 해 주세요
             
     ######################################################################
+    logging.basicConfig(filename='./logs/log1.txt', level = logging.INFO, format = '(%(asctime)s) : %(levelname)s : %(message)s', filemode='w')
+    logger = logging.getLogger(__name__)
+
+    model.to(device)
+    criterion = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
+    
+    max_val = 0
+    max_ep = 0
+    
+    for ep in range(args.epoch):
+        
+        logging.info(f'training epoch {ep}')
+        
+        model.train()
+        loss_sum = 0
+        
+        for batch, (image, label) in enumerate(tqdm(train_loader)):
+            
+            image = image.to(device)
+            label = label.to(device)
+            
+            pred = model(image)
+            loss = criterion(pred, label)
+            
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+            
+            loss_sum += loss.item()
+            logging.debug(f'Step {batch} loss : {loss.item()}')
+            
+        logging.info(f'Epoch {ep} loss : {loss_sum / (batch + 1)}')
+        
+        logging.info(f'Validating epoch {ep}')
+            
+        model.eval()
+        total = 0
+        correct = 0
+        
+        with torch.no_grad():
+           for (image, label) in tqdm(val_loader):
+                
+                total += len(image)
+                
+                image = image.to(device)
+                label = label.to(device)
+                
+                pred = model(image)
+                _, indices = torch.max(pred, dim = 1)
+                
+                correct += (indices == label).sum().item()
+        
+        accuracy = correct / total
+        logging.info(f'Epoch {ep} accuracy = {accuracy}')
+        torch.save(model.state_dict(), f'./save/{args.model}_{args.epoch}_{args.batch}_{args.learning_rate}/{ep}_score: {accuracy : .3f}.pth')
+        
+        if(max_val < accuracy):
+            max_val = accuracy
+            max_ep = ep
+    
+    print(f"Best validation score is: {max_val} and epoch is {max_ep}")        
+            
+
